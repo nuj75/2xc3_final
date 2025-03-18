@@ -1,7 +1,7 @@
 import math
 import random 
 import matplotlib.pyplot as plt
-
+import timeit
 class Node:
     def __init__(self, data, priority):
         self.data = data
@@ -278,72 +278,146 @@ def create_random_graph(n, e):
         if src == dst:
             continue
         # only add the generated pair into the graph if it isn't already in the graph
-        if dst not in G.graph[src] and src not in G.graph[dst]: 
-            G.add_edge(src, dst, math.random(0, 100))
+        if dst not in G.adj_list[src] and src not in G.adj_list[dst]: 
+            G.edge(src, dst, random.randint(0, 100))
             edges_left -= 1
     
     return G
 
 
-# design an experiment with the density of the graph on one axis and k on the other graph
-# 100 nodes. varying number of edges in graph. z axis is the time it took
-# def experiment():
-#     #2d array. first value represent number of edges, next represents k
-#     results = [[0 for j in range(10)] for i in range(10)] 
+def dijkstras_experiment():
+    #2d array. first value represent number of edges, next represents k
+    results = [[0 for j in range(10)] for i in range(10)] 
 
-#     for i in range(0, len(results)):
-#         for j in range(0, len(results[0])):
-#             #for the given edge and k values, time how long it takes to perform dijkstras
-#             total_cycles = 0
-#             for k in range(100):
-#                 G = create_random_graph((i + 2) * 2, (j + 2))
-#                 total_cycles += int(has_cycle(G))
+    for i in range(0, len(results)):
+        for j in range(0, len(results[0])):
+            #todo: add logic 
+            #for the given edge and k values, time how long it takes to perform dijkstras
+            averaging_array = []
+            for k in range(100):
+                G = create_random_graph(100, (i + 1) * 20)
 
-#             results[i][j] = total_cycles / 100
+                start = timeit.default_timer()
+                dijkstras(G, 0, (k + 1) * 20)
+                stop = timeit.default_timer()
+                averaging_array.append(stop-start)
+
+            results[i][j] = sum(averaging_array)/len(averaging_array)
+
     
-#     # start of x for each bar
-#     x = []
-#     for i in range(10):
-#         for j in range(10):
-#             x += [(i + 2) * 2]
+    # start of x for each bar
+    x = []
+    for i in range(10):
+        for j in range(10):
+            x += [(i + 1) * 20]
 
-#     # start of y for each bar
-#     y = []
-#     for i in range(10):
-#         for j in range(10):
-#             y += [(j + 2) * 2]
+    # start of y for each bar
+    y = []
+    for i in range(10):
+        for j in range(10):
+            y += [(j + 1) * 20]
 
-#     # start of z for each bar
-#     z = []
-#     for i in range(10):
-#         for j in range(10):
-#             z += [0]
+    # start of z for each bar
+    z = []
+    for i in range(10):
+        for j in range(10):
+            z += [0]
 
-#     # size of x for each bar
-#     dx = []
-#     for i in range(10):
-#         for j in range(10):
-#             dx += [1]
+    # size of x for each bar
+    dx = []
+    for i in range(10):
+        for j in range(10):
+            dx += [1]
 
-#     # size of y for each bar
-#     dy = []
-#     for i in range(10):
-#         for j in range(10):
-#             dy += [1]
+    # size of y for each bar
+    dy = []
+    for i in range(10):
+        for j in range(10):
+            dy += [1]
 
-#     # size of z for each bar
-#     dz = []
-#     for i in range(10):
-#         for j in range(10):
-#             dz += [(results[i][j])]
+    # size of z for each bar
+    dz = []
+    for i in range(10):
+        for j in range(10):
+            dz += [(results[i][j])]
 
-#     plt.clf()
-#     ax = plt.axes(projection="3d")
-#     ax.bar3d(x, y, z, dx, dy, dz, color = "#E02050")
+    plt.clf()
+    ax = plt.axes(projection="3d")
+    ax.bar3d(x, y, z, dx, dy, dz, color = "#E02050")
 
-#     ax.set_xlabel('# Nodes')
-#     ax.set_ylabel('min(edges, total possible edges)')
-#     ax.set_zlabel('Percent with cycle')
-#     plt.title("Percent cycle per # node and edge")  
-#     plt.savefig("1.png")
+    ax.set_xlabel('# edges')
+    ax.set_ylabel('k value')
+    ax.set_zlabel('Time Taken in s')
+    plt.title("Time taken for Dijkstra's by Density and K value")
+    plt.savefig("dijkstras.png")
+
+
+def bellmanford_experiment():
+    #2d array. first value represent number of edges, next represents k
+    results = [[0 for j in range(10)] for i in range(10)] 
+
+    for i in range(0, len(results)):
+        for j in range(0, len(results[0])):
+            #todo: add logic 
+            #for the given edge and k values, time how long it takes to perform dijkstras
+            averaging_array = []
+            for k in range(100):
+                G = create_random_graph(100, (i + 1) * 20)
+
+                start = timeit.default_timer()
+                bellmanford(G, 0, (k + 1) * 20)
+                stop = timeit.default_timer()
+                averaging_array.append(stop-start)
+
+            results[i][j] = sum(averaging_array)/len(averaging_array)
+
+    
+    # start of x for each bar
+    x = []
+    for i in range(10):
+        for j in range(10):
+            x += [(i + 1) * 20]
+
+    # start of y for each bar
+    y = []
+    for i in range(10):
+        for j in range(10):
+            y += [(j + 1) * 20]
+
+    # start of z for each bar
+    z = []
+    for i in range(10):
+        for j in range(10):
+            z += [0]
+
+    # size of x for each bar
+    dx = []
+    for i in range(10):
+        for j in range(10):
+            dx += [1]
+
+    # size of y for each bar
+    dy = []
+    for i in range(10):
+        for j in range(10):
+            dy += [1]
+
+    # size of z for each bar
+    dz = []
+    for i in range(10):
+        for j in range(10):
+            dz += [(results[i][j])]
+
+    plt.clf()
+    ax = plt.axes(projection="3d")
+    ax.bar3d(x, y, z, dx, dy, dz, color = "#E02050")
+
+    ax.set_xlabel('# edges')
+    ax.set_ylabel('k value')
+    ax.set_zlabel('Time Taken in s')
+    plt.title("Time taken for BellmanFord's by Density and K value") 
+    plt.savefig("BellmanFord.png")
+
+dijkstras_experiment()
+bellmanford_experiment()
 
