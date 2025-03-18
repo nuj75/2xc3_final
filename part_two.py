@@ -1,3 +1,7 @@
+import math
+import random 
+import matplotlib.pyplot as plt
+
 class Node:
     def __init__(self, data, priority):
         self.data = data
@@ -164,13 +168,10 @@ def dijkstras(G, source, k):
     edge_to = [i for i in range(len(G.adj_list))]
 
     while len(heap.items) > 1:
-        for item in heap.items:
-            print(item)
-        print(".")
         popped_node = heap.extract_max()
         popped_node = popped_node.data
         for adj_node in G.adj_list[popped_node]:
-            if relaxed[node] > 0:
+            if relaxed[adj_node] > 0:
                 relax_distance = curr_shortest_distance[popped_node] + G.w(popped_node, adj_node)
                 curr_distance = curr_shortest_distance[adj_node]
 
@@ -183,6 +184,8 @@ def dijkstras(G, source, k):
                     edge_to[adj_node] = popped_node
                     curr_shortest_distance[adj_node] = relax_distance
                     heap.change_priority(adj_node, relax_distance)
+                
+                relaxed[adj_node] += -1
     
     return_map = {}
     for i in range(len(G.adj_list)):
@@ -195,7 +198,62 @@ def dijkstras(G, source, k):
         return_map[i] = (curr_shortest_distance[i], path)
     
     return return_map
+
+def bellmanford(G, source, k):
+    relaxed = {}
+
+    for node in range(len(G.adj_list)):
+        relaxed[node] = k
     
+    edge_to = [i for i in range(len(G.adj_list))]
+    curr_shortest_distance = {}
+    for node in range(len(G.adj_list)):
+        if node == source:
+            curr_shortest_distance[node] = 0
+        else:
+            curr_shortest_distance[node] = float("inf")
+
+    queue = [source]
+
+    for i in range(len(G.adj_list) * len(G.adj_list)):
+        if len(queue) == 0:
+            break
+
+        curr_node = queue.pop(0)
+
+        for adj_node in G.adj_list[curr_node]:
+            if curr_shortest_distance[adj_node] > curr_shortest_distance[curr_node] + G.w(curr_node, adj_node) and relaxed[adj_node] > 0:
+                queue.append(adj_node)
+
+                edge_to[adj_node] = curr_node
+                curr_shortest_distance[adj_node] = curr_shortest_distance[curr_node] + G.w(curr_node, adj_node)
+
+                relaxed[adj_node] += -1
+    
+    for i in range(len(G.adj_list) * len(G.adj_list)):
+        if len(queue) == 0:
+            break
+
+        curr_node = queue.pop(0)
+
+        for adj_node in G.adj_list[curr_node]:
+            if curr_shortest_distance[adj_node] > curr_shortest_distance[curr_node] + G.w(curr_node, adj_node):
+                return {}
+    
+    return_map = {}
+    for i in range(len(G.adj_list)):
+        curr_node = i
+        path = ""
+        while edge_to[curr_node] != curr_node:
+            path = str(edge_to[curr_node]) + path
+            curr_node = edge_to[curr_node]
+        
+        return_map[i] = (curr_shortest_distance[i], path)
+    
+    return return_map
+
+
+
 
 graph = WeightedGraph(10)
 graph.edge(0, 1, 1)
@@ -205,6 +263,87 @@ graph.edge(2, 3, 0)
 graph.edge(0, 3, 100)
 graph.edge(3,4, 10)
 
-print(dijkstras(graph, 0, 10))
+print(bellmanford(graph, 0, 100))
 
+
+
+def create_random_graph(n, e):
+    G = WeightedGraph(n)
+    edges_left = min(e, math.comb(n, 2))
+
+    #break out of cycle if all possible edges are taken
+    while edges_left > 0:
+        src, dst = random.randint(0, n - 1), random.randint(0, n - 1)
+
+        if src == dst:
+            continue
+        # only add the generated pair into the graph if it isn't already in the graph
+        if dst not in G.graph[src] and src not in G.graph[dst]: 
+            G.add_edge(src, dst, math.random(0, 100))
+            edges_left -= 1
+    
+    return G
+
+
+# design an experiment with the density of the graph on one axis and k on the other graph
+# 100 nodes. varying number of edges in graph. z axis is the time it took
+# def experiment():
+#     #2d array. first value represent number of edges, next represents k
+#     results = [[0 for j in range(10)] for i in range(10)] 
+
+#     for i in range(0, len(results)):
+#         for j in range(0, len(results[0])):
+#             #for the given edge and k values, time how long it takes to perform dijkstras
+#             total_cycles = 0
+#             for k in range(100):
+#                 G = create_random_graph((i + 2) * 2, (j + 2))
+#                 total_cycles += int(has_cycle(G))
+
+#             results[i][j] = total_cycles / 100
+    
+#     # start of x for each bar
+#     x = []
+#     for i in range(10):
+#         for j in range(10):
+#             x += [(i + 2) * 2]
+
+#     # start of y for each bar
+#     y = []
+#     for i in range(10):
+#         for j in range(10):
+#             y += [(j + 2) * 2]
+
+#     # start of z for each bar
+#     z = []
+#     for i in range(10):
+#         for j in range(10):
+#             z += [0]
+
+#     # size of x for each bar
+#     dx = []
+#     for i in range(10):
+#         for j in range(10):
+#             dx += [1]
+
+#     # size of y for each bar
+#     dy = []
+#     for i in range(10):
+#         for j in range(10):
+#             dy += [1]
+
+#     # size of z for each bar
+#     dz = []
+#     for i in range(10):
+#         for j in range(10):
+#             dz += [(results[i][j])]
+
+#     plt.clf()
+#     ax = plt.axes(projection="3d")
+#     ax.bar3d(x, y, z, dx, dy, dz, color = "#E02050")
+
+#     ax.set_xlabel('# Nodes')
+#     ax.set_ylabel('min(edges, total possible edges)')
+#     ax.set_zlabel('Percent with cycle')
+#     plt.title("Percent cycle per # node and edge")  
+#     plt.savefig("1.png")
 
