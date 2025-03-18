@@ -90,6 +90,8 @@ class Heap:
 
         popped_max = self.items[-1]
         self.items = self.items[:-1]
+        self.map.pop(popped_max.data, None)
+
 
         self.sink(1)
 
@@ -162,7 +164,11 @@ def dijkstras(G, source, k):
     edge_to = [i for i in range(len(G.adj_list))]
 
     while len(heap.items) > 1:
+        for item in heap.items:
+            print(item)
+        print(".")
         popped_node = heap.extract_max()
+        popped_node = popped_node.data
         for adj_node in G.adj_list[popped_node]:
             if relaxed[node] > 0:
                 relax_distance = curr_shortest_distance[popped_node] + G.w(popped_node, adj_node)
@@ -182,7 +188,7 @@ def dijkstras(G, source, k):
     for i in range(len(G.adj_list)):
         curr_node = i
         path = ""
-        while curr_node != source:
+        while edge_to[curr_node] != curr_node:
             path = str(edge_to[curr_node]) + path
             curr_node = edge_to[curr_node]
         
@@ -190,4 +196,15 @@ def dijkstras(G, source, k):
     
     return return_map
     
+
+graph = WeightedGraph(10)
+graph.edge(0, 1, 1)
+graph.edge(0, 2, 10)
+graph.edge(2, 1, 0)
+graph.edge(2, 3, 0)
+graph.edge(0, 3, 100)
+graph.edge(3,4, 10)
+
+print(dijkstras(graph, 0, 10))
+
 
