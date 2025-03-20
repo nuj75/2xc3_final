@@ -170,6 +170,7 @@ def dijkstras(G, source, k):
     while len(heap.items) > 1:
         popped_node = heap.extract_max()
         popped_node = popped_node.data
+
         for adj_node in G.adj_list[popped_node]:
             if relaxed[adj_node] > 0:
                 relax_distance = curr_shortest_distance[popped_node] + G.w(popped_node, adj_node)
@@ -263,7 +264,6 @@ graph.edge(2, 3, 0)
 graph.edge(0, 3, 100)
 graph.edge(3,4, 10)
 
-print(bellmanford(graph, 0, 100))
 
 
 
