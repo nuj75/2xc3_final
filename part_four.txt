@@ -16,8 +16,10 @@ process for each k.
 3. The quality of A* will depend on the generated heuristic function. If the generated function maps all nodes to 0, 
 then it will behave the same as Dijkstra's. If the generated function maps all nodes to values which are too 
 low, then the algorithm will rely more on the "Dijkstra's component" of the algorithm. This will increase the 
-search space. If the generated function is appropriate, the search space will be optimally low. If the values range
-randomly, then the algorithm will find the path as encouraged by the heuristic function. 
+search space and behave marginally better than Dijkstra's. If the generated function is appropriate, the search space will be optimally low. If the values range
+randomly, then the algorithm will find the path as encouraged by the heuristic function, leading to optimized speed. 
+If the values are too large, then the algorithm will behave like best first search, essentially finding the path
+specified by the heuristic. 
 
 4. A* should be used in any situation where we can develop a reliable heuristic function to help find the final
 node. This will reduce the search space and therefore the time taken by the algorithm compared to Dijkstra's. 
