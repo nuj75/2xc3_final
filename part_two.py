@@ -179,12 +179,12 @@ def dijkstras(G, source, k):
                 if curr_distance > relax_distance and adj_node not in heap.map.keys():
                     edge_to[adj_node] = popped_node
                     curr_shortest_distance[adj_node] = relax_distance
-                    heap.add(Node(adj_node, relax_distance))
+                    heap.add(Node(adj_node, -1 * relax_distance))
                 
                 if curr_distance > relax_distance and adj_node in heap.map.keys():
                     edge_to[adj_node] = popped_node
                     curr_shortest_distance[adj_node] = relax_distance
-                    heap.change_priority(adj_node, relax_distance)
+                    heap.change_priority(adj_node, -1 * relax_distance)
                 
                 relaxed[adj_node] += -1
     
