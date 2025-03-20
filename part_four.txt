@@ -1,0 +1,23 @@
+1. While Dijkstra's algorithm tries to find the shortest path with no intuition, the A* algorithm
+has a heuristic function which provides some guidance for the algorithm. It informs the algorithm 
+of which paths to consider before others by using a high h value as a penalization for a node along 
+a path. A* tries to solve the fact that Dijkstra's explores all paths with no prior knowledge of the
+correct path. 
+
+2. Any emprical test between Dijkstra's algorithm and A* would essentially test the quality of the heuristic
+function. A potential experiment could involve comparing heuristic functions (like Manhattan, Diagonal, 
+and Euclidian distance). The final graph could compare the number of edges on one axis and have
+Manhattan, Diagonal, Euclidian, and Dijkstra's on the other. The z axis would indicate the average time taken
+by the particular function on a graph of k edges. To conduct the experiment, we can generate a graph with 100 nodes,
+and k edges (which will vary). Generate the Manhattan, Diagonal, and Euclidian heuristics for these graphs. Do this
+a certain number of times and find the average amount of time taken by each function on the input. Perform this 
+process for each k. 
+
+3. The quality of A* will depend on the generated heuristic function. If the generated function maps all nodes to 0, 
+then it will behave the same as Dijkstra's. If the generated function maps all nodes to values which are too 
+low, then the algorithm will rely more on the "Dijkstra's component" of the algorithm. This will increase the 
+search space. If the generated function is appropriate, the search space will be optimally low. If the values range
+randomly, then the algorithm will find the path as encouraged by the heuristic function. 
+
+4. A* should be used in any situation where we can develop a reliable heuristic function to help find the final
+node. This will reduce the search space and therefore the time taken by the algorithm compared to Dijkstra's. 
