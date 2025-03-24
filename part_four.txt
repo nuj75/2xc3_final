@@ -19,7 +19,7 @@ low, then the algorithm will rely more on the "Dijkstra's component" of the algo
 search space and behave marginally better than Dijkstra's. If the generated function is appropriate, the search space will be optimally low. If the values range
 randomly, then the algorithm will find the path as encouraged by the heuristic function, leading to optimized speed. 
 If the values are too large, then the algorithm will behave like best first search, essentially finding the path
-specified by the heuristic. 
+specified by the heuristic. This algorithm will take less time than Dijkstra's, but may return an unoptimal path. 
 
 4. A* should be used in any situation where we can develop a reliable heuristic function to help find the final
 node. This will reduce the search space and therefore the time taken by the algorithm compared to Dijkstra's. 
