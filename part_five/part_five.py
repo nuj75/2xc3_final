@@ -15,7 +15,6 @@ class WeightedGraph:
         self.locations = {}
         self.map = {}
         self.line = {}
-        self.total_lines = {}
     
     def add_node(self):
         self.adj_list.append([])
@@ -69,8 +68,8 @@ def file_parser():
             end_node = int(line_split[1])
             
             return_graph.edge(start_node, end_node, calculate_distance(return_graph, start_node, end_node))
-            return_graph.total_lines[(start_node, end_node)] = int(line_split[2])
-            return_graph.total_lines[(end_node, start_node)] = int(line_split[2])
+            return_graph.line[(start_node, end_node)] = int(line_split[2])
+            return_graph.line[(end_node, start_node)] = int(line_split[2])
 
 
     return return_graph
@@ -201,7 +200,7 @@ def astar(G, source, destination, heuristic = None):
         heuristic = {}
 
         for i in G.locations.keys():
-            heuristic[i] = calculate_distance(G, source,i)
+            heuristic[i] = calculate_distance(G, destination,i)
 
     heap = Heap()
     heap.add(Node(source, 0))
@@ -243,12 +242,17 @@ def astar(G, source, destination, heuristic = None):
     curr_node = destination
     path = str(destination)
     linecount = 0
+    curr_line = -1
     while edge_to[curr_node] != curr_node:
         path = str(edge_to[curr_node]) + "," + path
-        linecount += G.total_lines[(curr_node, edge_to[curr_node])] - 1
+
+
+        linecount += (1 if curr_line != G.line[(curr_node, edge_to[curr_node])] else 0)
+        curr_line = G.line[(curr_node, edge_to[curr_node])]
+
         curr_node = edge_to[curr_node]
         
-    return path, linecount + 1
+    return path, linecount
 
 
 
@@ -296,12 +300,17 @@ def dijkstras(G, source, destination):
     curr_node = destination
     path = str(destination)
     linecount = 0
+    curr_line = -1
     while edge_to[curr_node] != curr_node:
         path = str(edge_to[curr_node]) + "," + path
-        linecount += G.total_lines[(curr_node, edge_to[curr_node])] - 1
+
+
+        linecount += (1 if curr_line != G.line[(curr_node, edge_to[curr_node])] else 0)
+        curr_line = G.line[(curr_node, edge_to[curr_node])]
+
         curr_node = edge_to[curr_node]
         
-    return path, linecount + 1
+    return path, linecount
 
 # how to test results
 
@@ -311,7 +320,7 @@ def draw_plot(run_arr, mean, sort_name, file_name):
 
     plt.axhline(mean,color="red",linestyle="--",label="Avg")
     plt.xlabel("Experiment")
-    plt.xticks([0, 2, 4], ["same line", "adjacent line", "multiline"])
+    plt.xticks([0, 1,2], ["same line", "adjacent line", "multiline"])
     plt.ylabel("Run time in s")
     plt.title("Run time for " + sort_name)
 
@@ -329,13 +338,16 @@ def algorithm_testers():
         if i == 0 or i == 189:
             continue
         for j in range(len(G.adj_list)):
+            if j == 0 or j == 189:
+                continue
+
             start_time = timeit.default_timer()
             path, lines = dijkstras(G, i, j)
             stop_time = timeit.default_timer()
 
-            if lines == 1:
+            if lines == 0:
                 dijkstras_same_line.append(stop_time - start_time)
-            elif lines == 2:
+            elif lines == 1:
                 dijkstras_adjacent_line.append(stop_time - start_time)
             else:
                 dijkstras_multi_line.append(stop_time - start_time)
@@ -345,6 +357,7 @@ def algorithm_testers():
     c = sum(dijkstras_multi_line)/(len(dijkstras_multi_line) if len(dijkstras_multi_line) != 0 else 1 )
 
     avgs_arr = [a,b,c]
+
     draw_plot(avgs_arr, sum(avgs_arr)/len(avgs_arr), "Dijkstra's", "dijkstra")
         
     
@@ -357,20 +370,23 @@ def algorithm_testers():
             continue
 
         for j in range(len(G.adj_list)):
+            if j == 0 or j == 189:
+                continue
             heuristic = {}
 
             for k in G.locations.keys():
-                heuristic[k] = calculate_distance(G, i,k)
+                heuristic[k] = calculate_distance(G, j,k)
 
 
             start_time = timeit.default_timer()
             path, lines = astar(G, i, j, heuristic)
             stop_time = timeit.default_timer()
 
-            if lines == 1:
+            if lines == 0:
                 astar_same_line.append(stop_time - start_time)
-            elif lines == 2:
+            elif lines == 1:
                 astar_adjacent_line.append(stop_time - start_time)
+
             else:
                 astar_multi_line.append(stop_time - start_time)
 
@@ -378,7 +394,8 @@ def algorithm_testers():
     b = sum(astar_adjacent_line)/(len(astar_adjacent_line) if len(astar_adjacent_line) != 0 else 1 )
     c = sum(astar_multi_line)/(len(astar_multi_line) if len(astar_multi_line) != 0 else 1 )
 
-    avgs_arr = [a,b,c]    
+    avgs_arr = [a,b,c]
+
     draw_plot(avgs_arr, sum(avgs_arr)/len(avgs_arr), "A star", "astarnoh")
 
 
@@ -391,13 +408,17 @@ def algorithm_testers():
             continue
 
         for j in range(len(G.adj_list)):
+            if j == 0 or j == 189:
+                continue
+
+
             start_time = timeit.default_timer()
             path, lines = astar(G, i, j)
             stop_time = timeit.default_timer()
 
-            if lines == 1:
+            if lines == 0:
                 astar_same_line.append(stop_time - start_time)
-            elif lines == 2:
+            elif lines == 1:
                 astar_adjacent_line.append(stop_time - start_time)
             else:
                 astar_multi_line.append(stop_time - start_time)
@@ -406,7 +427,7 @@ def algorithm_testers():
     b = sum(astar_adjacent_line)/(len(astar_adjacent_line) if len(astar_adjacent_line) != 0 else 1 )
     c = sum(astar_multi_line)/(len(astar_multi_line) if len(astar_multi_line) != 0 else 1 )
 
-    avgs_arr = [a,b,c]    
+    avgs_arr = [a,b,c]  
     draw_plot(avgs_arr, sum(avgs_arr)/len(avgs_arr), "A star", "astar")
 
 algorithm_testers()
