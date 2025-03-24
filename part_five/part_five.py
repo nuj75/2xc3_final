@@ -5,13 +5,17 @@
 # stations and calculating the distance between the two
 # calculate the heuristic function in the a* algorithm. take the location of the source and each other node
 # and calculate the distance
-
+import numpy as np
+import matplotlib.pyplot as plt
+import timeit
 
 class WeightedGraph:
     def __init__(self, size):
         self.adj_list = [[] for i in range(size)]
         self.locations = {}
         self.map = {}
+        self.line = {}
+        self.total_lines = {}
     
     def add_node(self):
         self.adj_list.append([])
@@ -52,6 +56,7 @@ def file_parser():
             line_split = file[i].split(",")
 
             return_graph.locations[int(line_split[0])] = {"lat": float(line_split[1]), "long": float(line_split[2])}
+            return_graph.line[int(line_split[0])] = line_split
 
 
     with open("london_connections.csv", "r") as f:
@@ -64,11 +69,11 @@ def file_parser():
             end_node = int(line_split[1])
             
             return_graph.edge(start_node, end_node, calculate_distance(return_graph, start_node, end_node))
+            return_graph.total_lines[(start_node, end_node)] = int(line_split[2])
+            return_graph.total_lines[(end_node, start_node)] = int(line_split[2])
+
 
     return return_graph
-
-graph = file_parser()
-
 
 
 
@@ -191,7 +196,13 @@ class Heap:
 
 
 
-def astar(G, source, destination):
+def astar(G, source, destination, heuristic = None):
+    if heuristic == None:
+        heuristic = {}
+
+        for i in G.locations.keys():
+            heuristic[i] = calculate_distance(G, source,i)
+
     heap = Heap()
     heap.add(Node(source, 0))
 
@@ -203,7 +214,6 @@ def astar(G, source, destination):
             curr_shortest_distance[node] = float("inf")
 
     edge_to = [i for i in range(len(G.adj_list))]
-
     while len(heap.items) > 1:
         popped_node = heap.extract_max()
         popped_node = popped_node.data
@@ -220,29 +230,30 @@ def astar(G, source, destination):
                 edge_to[adj_node] = popped_node
                 curr_shortest_distance[adj_node] = relax_distance
                 heap.add(Node(adj_node, -1 * (relax_distance + heuristic[adj_node])))
+
             
             if curr_distance > relax_distance and adj_node in heap.map.keys():
                 edge_to[adj_node] = popped_node
                 curr_shortest_distance[adj_node] = relax_distance
                 heap.change_priority(adj_node, -1 * (relax_distance + heuristic[adj_node]))
+
                 
     
     
     curr_node = destination
-    path = ""
+    path = str(destination)
+    linecount = 0
     while edge_to[curr_node] != curr_node:
-        path = str(edge_to[curr_node]) + path
+        path = str(edge_to[curr_node]) + "," + path
+        linecount += G.total_lines[(curr_node, edge_to[curr_node])] - 1
         curr_node = edge_to[curr_node]
         
-    return path
+    return path, linecount + 1
 
 
 
-def dijkstras(G, source, k):
-    relaxed = {}
+def dijkstras(G, source, destination):
 
-    for node in range(len(G.adj_list)):
-        relaxed[node] = k
     
     heap = Heap()
     heap.add(Node(source, 0))
@@ -256,35 +267,148 @@ def dijkstras(G, source, k):
 
     edge_to = [i for i in range(len(G.adj_list))]
 
+
     while len(heap.items) > 1:
         popped_node = heap.extract_max()
         popped_node = popped_node.data
 
-        for adj_node in G.adj_list[popped_node]:
-            if relaxed[adj_node] > 0:
-                relax_distance = curr_shortest_distance[popped_node] + G.w(popped_node, adj_node)
-                curr_distance = curr_shortest_distance[adj_node]
+        if popped_node == destination:
+            break
 
-                if curr_distance > relax_distance and adj_node not in heap.map.keys():
-                    edge_to[adj_node] = popped_node
-                    curr_shortest_distance[adj_node] = relax_distance
-                    heap.add(Node(adj_node, -1 * relax_distance))
+
+        for adj_node in G.adj_list[popped_node]:
+            relax_distance = curr_shortest_distance[popped_node] + G.w(popped_node, adj_node)
+            curr_distance = curr_shortest_distance[adj_node]
+
+            if curr_distance > relax_distance and adj_node not in heap.map.keys():
+                edge_to[adj_node] = popped_node
+                curr_shortest_distance[adj_node] = relax_distance
+
+                heap.add(Node(adj_node, -1 * relax_distance))
+            
+            if curr_distance > relax_distance and adj_node in heap.map.keys():
+                edge_to[adj_node] = popped_node
+                curr_shortest_distance[adj_node] = relax_distance
+
+                heap.change_priority(adj_node, -1 * relax_distance)
                 
-                if curr_distance > relax_distance and adj_node in heap.map.keys():
-                    edge_to[adj_node] = popped_node
-                    curr_shortest_distance[adj_node] = relax_distance
-                    heap.change_priority(adj_node, -1 * relax_distance)
-                
-                relaxed[adj_node] += -1
     
-    return_map = {}
-    for i in range(len(G.adj_list)):
-        curr_node = i
-        path = ""
-        while edge_to[curr_node] != curr_node:
-            path = str(edge_to[curr_node]) + path
-            curr_node = edge_to[curr_node]
+    curr_node = destination
+    path = str(destination)
+    linecount = 0
+    while edge_to[curr_node] != curr_node:
+        path = str(edge_to[curr_node]) + "," + path
+        linecount += G.total_lines[(curr_node, edge_to[curr_node])] - 1
+        curr_node = edge_to[curr_node]
         
-        return_map[i] = (curr_shortest_distance[i], path)
+    return path, linecount + 1
+
+# how to test results
+
+def draw_plot(run_arr, mean, sort_name, file_name):
+    x = np.arange(0, len(run_arr),1)
+    fig=plt.figure(figsize=(20,8))
+
+    plt.axhline(mean,color="red",linestyle="--",label="Avg")
+    plt.xlabel("Experiment")
+    plt.xticks([0, 2, 4], ["same line", "adjacent line", "multiline"])
+    plt.ylabel("Run time in s")
+    plt.title("Run time for " + sort_name)
+
     
-    return return_map
+    plt.bar(x,run_arr)
+    plt.savefig(file_name + ".png")
+
+def algorithm_testers():
+    G = file_parser()
+
+    dijkstras_same_line = []
+    dijkstras_adjacent_line = []
+    dijkstras_multi_line = []
+    for i in range(len(G.adj_list)):
+        if i == 0 or i == 189:
+            continue
+        for j in range(len(G.adj_list)):
+            start_time = timeit.default_timer()
+            path, lines = dijkstras(G, i, j)
+            stop_time = timeit.default_timer()
+
+            if lines == 1:
+                dijkstras_same_line.append(stop_time - start_time)
+            elif lines == 2:
+                dijkstras_adjacent_line.append(stop_time - start_time)
+            else:
+                dijkstras_multi_line.append(stop_time - start_time)
+    
+    a = sum(dijkstras_same_line)/(len(dijkstras_same_line) if len(dijkstras_same_line) != 0 else 1 )
+    b = sum(dijkstras_adjacent_line)/(len(dijkstras_adjacent_line) if len(dijkstras_adjacent_line) != 0 else 1 )
+    c = sum(dijkstras_multi_line)/(len(dijkstras_multi_line) if len(dijkstras_multi_line) != 0 else 1 )
+
+    avgs_arr = [a,b,c]
+    draw_plot(avgs_arr, sum(avgs_arr)/len(avgs_arr), "Dijkstra's", "dijkstra")
+        
+    
+    astar_same_line = []
+    astar_adjacent_line = []
+    astar_multi_line = []
+    
+    for i in range(len(G.adj_list)):
+        if i == 0 or i == 189:
+            continue
+
+        for j in range(len(G.adj_list)):
+            heuristic = {}
+
+            for k in G.locations.keys():
+                heuristic[k] = calculate_distance(G, i,k)
+
+
+            start_time = timeit.default_timer()
+            path, lines = astar(G, i, j, heuristic)
+            stop_time = timeit.default_timer()
+
+            if lines == 1:
+                astar_same_line.append(stop_time - start_time)
+            elif lines == 2:
+                astar_adjacent_line.append(stop_time - start_time)
+            else:
+                astar_multi_line.append(stop_time - start_time)
+
+    a = sum(astar_same_line)/(len(astar_same_line) if len(astar_same_line) != 0 else 1 )
+    b = sum(astar_adjacent_line)/(len(astar_adjacent_line) if len(astar_adjacent_line) != 0 else 1 )
+    c = sum(astar_multi_line)/(len(astar_multi_line) if len(astar_multi_line) != 0 else 1 )
+
+    avgs_arr = [a,b,c]    
+    draw_plot(avgs_arr, sum(avgs_arr)/len(avgs_arr), "A star", "astarnoh")
+
+
+    astar_same_line = []
+    astar_adjacent_line = []
+    astar_multi_line = []
+    
+    for i in range(len(G.adj_list)):
+        if i == 0 or i == 189:
+            continue
+
+        for j in range(len(G.adj_list)):
+            start_time = timeit.default_timer()
+            path, lines = astar(G, i, j)
+            stop_time = timeit.default_timer()
+
+            if lines == 1:
+                astar_same_line.append(stop_time - start_time)
+            elif lines == 2:
+                astar_adjacent_line.append(stop_time - start_time)
+            else:
+                astar_multi_line.append(stop_time - start_time)
+
+    a = sum(astar_same_line)/(len(astar_same_line) if len(astar_same_line) != 0 else 1 )
+    b = sum(astar_adjacent_line)/(len(astar_adjacent_line) if len(astar_adjacent_line) != 0 else 1 )
+    c = sum(astar_multi_line)/(len(astar_multi_line) if len(astar_multi_line) != 0 else 1 )
+
+    avgs_arr = [a,b,c]    
+    draw_plot(avgs_arr, sum(avgs_arr)/len(avgs_arr), "A star", "astar")
+
+algorithm_testers()
+    
+
