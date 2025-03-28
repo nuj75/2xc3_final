@@ -1,0 +1,16 @@
+1. When including the time taken to calculate the heuristic function, the a star algorithm performs 
+similarly or slightly better than Dijkstra's algorithm. Because the algorithm must perform a linear operation on
+the entire input, the benefits of having the heuristic function are offset. However, when omitting the time taken
+to calculate the heuristic function, the a star algorithm performs much better than Dijkstra's algorithm in all cases. 
+For this reason, the a star algorithm's benefits are the most impactful when we are trying to find multiple shortest paths
+with the same destination station.
+
+2. As expected, a star performs the best when omitting the time taken to calculate the heuristic function. When including the
+time taken to calculate the heuristic function, Dijkstra's algorithm only performs better when the two stations are on the same line.
+Paths between stations on the same line have far less diversity compared to paths between stations on different lines. Therefore, when
+trying to find the shortest path between these stations, the heuristic function is far less useful and the cost of calulating it is not justified. 
+When the stations are on different lines, the heuristic function is more useful since there is greater diversity in the number of paths between them.
+In this case, the heuristic calculation step helps reduce computations later in the algorithm, resulting a star performing better. 
+
+3. Both algorithms in part five return a path and total_lines value, which indicate the shortest path between
+the two nodes and the total number of lines traversed in each. 
