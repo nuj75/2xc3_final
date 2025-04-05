@@ -418,6 +418,102 @@ def bellmanford_experiment():
     plt.title("Time taken for BellmanFord's by Density and K value") 
     plt.savefig("BellmanFord.png")
 
-dijkstras_experiment()
-bellmanford_experiment()
+# dijkstras_experiment()
+# bellmanford_experiment()
 
+def furturTesting():
+
+    def test_empty_graph():
+        G = WeightedGraph(1)
+        dij_result = dijkstras(G, 0, 3)
+        bf_result = bellmanford(G, 0, 3)
+        
+        print(f"Dijkstra's result for node 0: {dij_result[0]}")
+        print(f"Bellman-Ford result for node 0: {bf_result[0]}")
+        print(f"Empty graph test: {dij_result[0] == (0, '') and bf_result[0] == (0, '')}")
+    
+    def test_disconnected_graph():
+        G = WeightedGraph(5)
+        dij_result = dijkstras(G, 0, 3)
+        bf_result = bellmanford(G, 0, 3)
+        
+        print("Distances to other nodes should be infinity:")
+        print(dij_result)
+        print(bf_result)
+    
+    def test_simple_linear_path():
+        G = WeightedGraph(5)
+        G.edge(0, 1, 1)
+        G.edge(1, 2, 1)
+        G.edge(2, 3, 1)
+        G.edge(3, 4, 1)
+        
+        dij_result = dijkstras(G, 0, 3)
+        bf_result = bellmanford(G, 0, 3)
+        
+        print("Expected distances: [0, 1, 2, 3, 4]")
+        print(dij_result)
+        print(bf_result)
+
+    def test_negative_weights():
+        G = WeightedGraph(4)
+        G.edge(0, 1, 1)
+        G.edge(1, 2, -3)
+        G.edge(0, 3, 5)
+        G.edge(2, 3, 1)
+        
+        print(bellmanford(G, 0, 3))
+        bf_result = bellmanford(G, 0, 3)
+        print(f"Bellman works with negative weights: {bf_result[3][0] == -1}")
+
+    def test_limited_relaxations(): 
+        G = WeightedGraph(5)
+        G.edge(0, 1, 1)
+        G.edge(1, 2, 1)
+        G.edge(2, 3, 1)
+        G.edge(3, 4, 1)
+        G.edge(3, 0, 1)
+        
+        dij_result = dijkstras(G, 0, 1)
+        bf_result = bellmanford(G, 0, 1)
+        print(dij_result)
+        print(bf_result)
+    
+    def test_multiple_paths_same_length():
+        G = WeightedGraph(4)
+        G.edge(0, 1, 2)
+        G.edge(1, 3, 2)
+        G.edge(0, 2, 1)
+        G.edge(2, 3, 3)
+        
+        dij_result = dijkstras(G, 0, 3)
+        bf_result = bellmanford(G, 0, 3)
+        
+        print(f"Dijkstra's distance to node 3: {dij_result[3][0]} (should be 4)")
+        print(f"Bellman-Ford distance to node 3: {bf_result[3][0]} (should be 4)")
+    
+    def test_weighted_cycle():
+        G = WeightedGraph(5)
+        G.edge(0, 1, 1)
+        G.edge(1, 2, 2)
+        G.edge(2, 3, 3)
+        G.edge(3, 4, 4)
+        G.edge(4, 0, 5)
+        G.edge(0, 3, 10)
+        
+        dij_result = dijkstras(G, 0, 3)
+        bf_result = bellmanford(G, 0, 3)
+        
+        print(f"Dijkstra's distance to node 3: {dij_result[3][0]} (should be 6, not 10 or 9)")
+        print(f"Bellman-Ford distance to node 3: {bf_result[3][0]} (should be 6, not 10 or 9)")
+
+    test_empty_graph()
+    test_disconnected_graph()
+    test_simple_linear_path()
+    # test_negative_weights()
+    test_limited_relaxations()
+    test_multiple_paths_same_length()
+    test_weighted_cycle()
+
+
+furturTesting()
