@@ -17,7 +17,7 @@ class ShortPathFinder:
 
 class SPAlgorithm:
     def calc_sp(self, graph, source, dest = None):
-        raise NotImplementedError("Subclasses must implement abstract method")
+        print("Subclasses must implement method")
 
 class dijkstras(SPAlgorithm):
     def calc_sp(self, G, source, dest = None, k=float("inf")):
@@ -254,9 +254,6 @@ class WeightedGraph(Graph):
     def __init__(self, size = 0):
         super().__init__(size)
         self.map = {}
-    
-    # def add_node(self):
-    #     self.adj_list.append([])
 
     def max_node(self):
         return len(self.adj_list) - 1
@@ -275,17 +272,14 @@ class WeightedGraph(Graph):
             return self.map[(from_node, to_node)]
 
         return -1
-        
-    # def connected(self, from_node, to_node):
-    #     return (from_node in self.adj_list[to_node]) or (to_node in self.adj_list[from_node])
 
 class HeuristicGraph(WeightedGraph):
     def __init__(self, size = 0):
         super().__init__(size)
         self.heuristic = {}
     
-    def set_heuristic(self, node, h_value):
-        self.heuristic[node] = h_value
+    def set_heuristic(self, node, hValue):
+        self.heuristic[node] = hValue
     
     def get_heuristic(self, node):
         return self.heuristic.get(node, float('inf'))
