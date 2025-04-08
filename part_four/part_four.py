@@ -184,9 +184,9 @@ def astar(G, source, destination, heuristic):
     
     
     curr_node = destination
-    path = ""
+    path = str(destination)
     while edge_to[curr_node] != curr_node:
-        path = str(edge_to[curr_node]) + path
+        path = str(edge_to[curr_node]) + "," + path
         curr_node = edge_to[curr_node]
         
     return path
