@@ -214,19 +214,25 @@ def bellmanford(G, source, k):
         else:
             curr_shortest_distance[node] = float("inf")
 
-    for k in range(len(G.adj_list)):
+    for p in range(len(G.adj_list)):
+        seen = set()
         for i in range(len(G.adj_list)):
             for j in range(len(G.adj_list[i])):
                 from_node = i;
                 to_node = G.adj_list[i][j]
 
+                if (from_node, to_node) in seen or (to_node, from_node) in seen:
+                    continue
+
                 if curr_shortest_distance[to_node] > curr_shortest_distance[from_node] + G.w(from_node, to_node):
-                    if relaxed[from_node] < k:
+                    if relaxed[to_node] < k:
                         edge_to[to_node] = from_node
 
                     curr_shortest_distance[to_node] = curr_shortest_distance[from_node] + G.w(from_node, to_node)
 
                     relaxed[to_node] += 1
+                
+                seen.add((to_node, from_node))
             
     for i in range(len(G.adj_list)):
         for j in range(len(G.adj_list[i])):
@@ -322,13 +328,13 @@ def dijkstras_experiment():
     dx = []
     for i in range(10):
         for j in range(10):
-            dx += [1]
+            dx += [20]
 
     # size of y for each bar
     dy = []
     for i in range(10):
         for j in range(10):
-            dy += [1]
+            dy += [20]
 
     # size of z for each bar
     dz = []
@@ -357,6 +363,7 @@ def bellmanford_experiment():
             #for the given edge and k values, time how long it takes to perform dijkstras
             averaging_array = []
             for k in range(100):
+                
                 G = create_random_graph(100, (i + 1) * 20)
 
                 start = timeit.default_timer()
@@ -389,13 +396,13 @@ def bellmanford_experiment():
     dx = []
     for i in range(10):
         for j in range(10):
-            dx += [1]
+            dx += [20]
 
     # size of y for each bar
     dy = []
     for i in range(10):
         for j in range(10):
-            dy += [1]
+            dy += [20]
 
     # size of z for each bar
     dz = []
@@ -413,8 +420,8 @@ def bellmanford_experiment():
     plt.title("Time taken for BellmanFord's by Density and K value") 
     plt.savefig("BellmanFord.png")
 
-# dijkstras_experiment()
-# bellmanford_experiment()
+dijkstras_experiment()
+bellmanford_experiment()
 
 def furturTesting():
 
@@ -425,7 +432,7 @@ def furturTesting():
         
         print(f"Dijkstra's result for node 0: {dij_result[0]}")
         print(f"Bellman-Ford result for node 0: {bf_result[0]}")
-        print(f"Empty graph test: {dij_result[0] == (0, '') and bf_result[0] == (0, '')}")
+        print(f"Empty graph test: {dij_result[0] == (0, '') and bf_result[0] == (0, '')}\n\n")
     
     def test_disconnected_graph():
         G = WeightedGraph(5)
@@ -435,6 +442,7 @@ def furturTesting():
         print("Distances to other nodes should be infinity:")
         print(dij_result)
         print(bf_result)
+        print("\n\n")
     
     def test_simple_linear_path():
         G = WeightedGraph(5)
@@ -449,6 +457,8 @@ def furturTesting():
         print("Expected distances: [0, 1, 2, 3, 4]")
         print(dij_result)
         print(bf_result)
+        print("\n\n")
+
 
     def test_negative_weights():
         G = WeightedGraph(4)
@@ -460,6 +470,8 @@ def furturTesting():
         bf_result = bellmanford(G, 0, 3)
         print(bf_result)
         print(f"Bellman works with negative weights: {bf_result == {}}")
+        print("\n\n")
+
 
     def test_limited_relaxations(): 
         G = WeightedGraph(5)
@@ -473,6 +485,8 @@ def furturTesting():
         bf_result = bellmanford(G, 0, 1)
         print(dij_result)
         print(bf_result)
+        print("\n\n")
+
     
     def test_multiple_paths_same_length():
         G = WeightedGraph(4)
@@ -486,6 +500,8 @@ def furturTesting():
         
         print(f"Dijkstra's distance to node 3: {dij_result[3][0]} (should be 4)")
         print(f"Bellman-Ford distance to node 3: {bf_result[3][0]} (should be 4)")
+        print("\n\n")
+
     
     def test_weighted_cycle():
         G = WeightedGraph(5)
@@ -501,6 +517,8 @@ def furturTesting():
         
         print(f"Dijkstra's distance to node 3: {dij_result[3][0]} (should be 6, not 10 or 9)")
         print(f"Bellman-Ford distance to node 3: {bf_result[3][0]} (should be 6, not 10 or 9)")
+        print("\n\n")
+
 
     test_empty_graph()
     test_disconnected_graph()
