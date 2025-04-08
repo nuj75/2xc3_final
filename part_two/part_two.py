@@ -153,7 +153,7 @@ def dijkstras(G, source, k):
     relaxed = {}
 
     for node in range(len(G.adj_list)):
-        relaxed[node] = k
+        relaxed[node] = 0
     
     heap = Heap()
     heap.add(Node(source, 0))
@@ -172,7 +172,7 @@ def dijkstras(G, source, k):
         popped_node = popped_node.data
 
         for adj_node in G.adj_list[popped_node]:
-            if relaxed[adj_node] > 0:
+            if relaxed[adj_node] < k:
                 relax_distance = curr_shortest_distance[popped_node] + G.w(popped_node, adj_node)
                 curr_distance = curr_shortest_distance[adj_node]
 
@@ -186,7 +186,7 @@ def dijkstras(G, source, k):
                     curr_shortest_distance[adj_node] = relax_distance
                     heap.change_priority(adj_node, -1 * relax_distance)
                 
-                relaxed[adj_node] += -1
+                relaxed[adj_node] += 1
     
     return_map = {}
     for i in range(len(G.adj_list)):
@@ -198,6 +198,7 @@ def dijkstras(G, source, k):
         
         return_map[i] = (curr_shortest_distance[i], path)
     
+    # print(set(relaxed.values()))
     return return_map
 
 def bellmanford(G, source, k):
@@ -215,14 +216,11 @@ def bellmanford(G, source, k):
             curr_shortest_distance[node] = float("inf")
 
     for p in range(len(G.adj_list)):
-        seen = set()
         for i in range(len(G.adj_list)):
             for j in range(len(G.adj_list[i])):
                 from_node = i;
                 to_node = G.adj_list[i][j]
 
-                if (from_node, to_node) in seen or (to_node, from_node) in seen:
-                    continue
 
                 if curr_shortest_distance[to_node] > curr_shortest_distance[from_node] + G.w(from_node, to_node):
                     if relaxed[to_node] < k:
@@ -232,8 +230,8 @@ def bellmanford(G, source, k):
 
                     relaxed[to_node] += 1
                 
-                seen.add((to_node, from_node))
-            
+    
+
     for i in range(len(G.adj_list)):
         for j in range(len(G.adj_list[i])):
             from_node = i;
@@ -247,11 +245,15 @@ def bellmanford(G, source, k):
         curr_node = i
         path = ""
         while edge_to[curr_node] != curr_node:
+            if len(path) > 100 or edge_to[edge_to[curr_node]] == curr_node:
+                path = "k value resulted in invalid path"
+                break
             path = str(edge_to[curr_node]) + path
             curr_node = edge_to[curr_node]
         
         return_map[i] = (curr_shortest_distance[i], path)
     
+    print(set(relaxed.values()))
     return return_map
 
 
@@ -264,6 +266,9 @@ graph.edge(2, 1, 0)
 graph.edge(2, 3, 0)
 graph.edge(0, 3, 100)
 graph.edge(3,4, 10)
+
+print(dijkstras(graph, 0, 10))
+print(bellmanford(graph, 0, 10))
 
 
 
@@ -299,7 +304,7 @@ def dijkstras_experiment():
                 G = create_random_graph(100, (i + 1) * 20)
 
                 start = timeit.default_timer()
-                dijkstras(G, 0, (k + 1) * 20)
+                dijkstras(G, 0, j)
                 stop = timeit.default_timer()
                 averaging_array.append(stop-start)
 
@@ -316,7 +321,7 @@ def dijkstras_experiment():
     y = []
     for i in range(10):
         for j in range(10):
-            y += [(j + 1) * 20]
+            y += [j]
 
     # start of z for each bar
     z = []
@@ -334,7 +339,7 @@ def dijkstras_experiment():
     dy = []
     for i in range(10):
         for j in range(10):
-            dy += [20]
+            dy += [1]
 
     # size of z for each bar
     dz = []
@@ -359,15 +364,13 @@ def bellmanford_experiment():
 
     for i in range(0, len(results)):
         for j in range(0, len(results[0])):
-            #todo: add logic 
-            #for the given edge and k values, time how long it takes to perform dijkstras
             averaging_array = []
             for k in range(100):
                 
                 G = create_random_graph(100, (i + 1) * 20)
 
                 start = timeit.default_timer()
-                bellmanford(G, 0, (k + 1) * 20)
+                bellmanford(G, 0, j)
                 stop = timeit.default_timer()
                 averaging_array.append(stop-start)
 
@@ -384,7 +387,7 @@ def bellmanford_experiment():
     y = []
     for i in range(10):
         for j in range(10):
-            y += [(j + 1) * 20]
+            y += [j]
 
     # start of z for each bar
     z = []
@@ -402,7 +405,7 @@ def bellmanford_experiment():
     dy = []
     for i in range(10):
         for j in range(10):
-            dy += [20]
+            dy += [1]
 
     # size of z for each bar
     dz = []
@@ -529,4 +532,4 @@ def furturTesting():
     test_weighted_cycle()
 
 
-furturTesting()
+# furturTesting()
