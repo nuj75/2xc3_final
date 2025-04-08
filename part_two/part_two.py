@@ -204,7 +204,7 @@ def bellmanford(G, source, k):
     relaxed = {}
 
     for node in range(len(G.adj_list)):
-        relaxed[node] = k
+        relaxed[node] = 0
     
     edge_to = [i for i in range(len(G.adj_list))]
     curr_shortest_distance = {}
@@ -214,31 +214,26 @@ def bellmanford(G, source, k):
         else:
             curr_shortest_distance[node] = float("inf")
 
-    queue = [source]
+    for k in range(len(G.adj_list)):
+        for i in range(len(G.adj_list)):
+            for j in range(len(G.adj_list[i])):
+                from_node = i;
+                to_node = G.adj_list[i][j]
 
-    for i in range(len(G.adj_list) * len(G.adj_list)):
-        if len(queue) == 0:
-            break
+                if curr_shortest_distance[to_node] > curr_shortest_distance[from_node] + G.w(from_node, to_node):
+                    if relaxed[from_node] < k:
+                        edge_to[to_node] = from_node
 
-        curr_node = queue.pop(0)
+                    curr_shortest_distance[to_node] = curr_shortest_distance[from_node] + G.w(from_node, to_node)
 
-        for adj_node in G.adj_list[curr_node]:
-            if curr_shortest_distance[adj_node] > curr_shortest_distance[curr_node] + G.w(curr_node, adj_node) and relaxed[adj_node] > 0:
-                queue.append(adj_node)
+                    relaxed[to_node] += 1
+            
+    for i in range(len(G.adj_list)):
+        for j in range(len(G.adj_list[i])):
+            from_node = i;
+            to_node = G.adj_list[i][j]
 
-                edge_to[adj_node] = curr_node
-                curr_shortest_distance[adj_node] = curr_shortest_distance[curr_node] + G.w(curr_node, adj_node)
-
-                relaxed[adj_node] += -1
-    
-    for i in range(len(G.adj_list) * len(G.adj_list)):
-        if len(queue) == 0:
-            break
-
-        curr_node = queue.pop(0)
-
-        for adj_node in G.adj_list[curr_node]:
-            if curr_shortest_distance[adj_node] > curr_shortest_distance[curr_node] + G.w(curr_node, adj_node):
+            if curr_shortest_distance[to_node] > curr_shortest_distance[from_node] + G.w(from_node, to_node):
                 return {}
     
     return_map = {}
@@ -462,9 +457,9 @@ def furturTesting():
         G.edge(0, 3, 5)
         G.edge(2, 3, 1)
         
-        print(bellmanford(G, 0, 3))
         bf_result = bellmanford(G, 0, 3)
-        print(f"Bellman works with negative weights: {bf_result[3][0] == -1}")
+        print(bf_result)
+        print(f"Bellman works with negative weights: {bf_result == {}}")
 
     def test_limited_relaxations(): 
         G = WeightedGraph(5)
@@ -510,7 +505,7 @@ def furturTesting():
     test_empty_graph()
     test_disconnected_graph()
     test_simple_linear_path()
-    # test_negative_weights()
+    test_negative_weights()
     test_limited_relaxations()
     test_multiple_paths_same_length()
     test_weighted_cycle()
